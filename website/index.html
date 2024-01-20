@@ -51,7 +51,7 @@
 
       headers.append("Access-Control-Allow-Origin", "*");
 
-      const res = fetch(`http://192.168.0.128:8080/make_boomerang?&from_sec=${fromSec.value}&to_sec=${toSec.value}&speed=${speed.value}`, {
+      const res = fetch(`http://rpi.local/make_boomerang?&from_sec=${fromSec.value}&to_sec=${toSec.value}&speed=${speed.value}`, {
         method: "post",
         body: formData,
         headers: headers,
