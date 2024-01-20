@@ -6,13 +6,15 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-axum = "0.7.4"
+axum = { version = "0.7.4", features = ["multipart"] }
 ffmpeg-sidecar = "0.5.1"
+futures-util = "0.3.30"
+tokio = { version = "1.35.1", features = ["macros", "rt-multi-thread"] }
 
 [[bin]]
 name = "boomerang"
 path = "src/bin/boomerang.rs"
 
 [[bin]]
-name = "boomerang-server"
-path = "src/server.rs"
+name = "server"
+path = "src/bin/server.rs"
