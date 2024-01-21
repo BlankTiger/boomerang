@@ -4,7 +4,7 @@ use std::os::unix::fs::PermissionsExt;
 const SERVER_URL: &str = "https://github.com/BlankTiger/boomerang/releases/download/master/boomerang-server-linux-aarch64";
 const FILENAME: &str = "bin/boomerang_server";
 const TEMP_FILENAME: &str = "bin/boomerang_server-new";
-const TIMEOUT: u64 = 3 * 60;
+const TIMEOUT: u64 = 2 * 60;
 
 fn main() {
     loop {
