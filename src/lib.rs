@@ -2,7 +2,7 @@ pub fn make_boomerang(
     input_path: &str,
     from_sec: &str,
     to_sec: &str,
-    repeat: Option<usize>,
+    _repeat: Option<usize>,
     speed: Option<f64>,
 ) -> Result<(), ffmpeg_sidecar::error::Error> {
     ffmpeg_sidecar::download::auto_download()?;
