@@ -4,9 +4,11 @@ use axum::{
     routing, Router,
 };
 use boomeranglib::make_boomerang;
-use log::info;
+use color_eyre::Report;
+use tracing::info;
 use std::collections::HashMap;
 use std::io::Write;
+use tracing_subscriber::EnvFilter;
 
 async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut multipart: Multipart) {
     let curr_file = "current_file.mp4".to_string();
@@ -43,7 +45,8 @@ async fn website() -> Html<String> {
 }
 
 #[tokio::main]
-async fn main() {
+async fn main() -> color_eyre::Result<()> {
+    setup()?;
     let app = Router::new()
         .route("/", routing::get(website))
         .route("/make_boomerang", routing::post(create_boomerang))
@@ -51,4 +54,21 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind("0.0.0.0:8080").await.unwrap();
 
     axum::serve(listener, app).await.unwrap();
+    Ok(())
+}
+
+pub fn setup() -> Result<(), Report> {
+    if std::env::var("RUST_LIB_BACKTRACE").is_err() {
+        std::env::set_var("RUST_LIB_BACKTRACE", "1")
+    }
+    color_eyre::install()?;
+
+    if std::env::var("RUST_LOG").is_err() {
+        std::env::set_var("RUST_LOG", "info")
+    }
+    tracing_subscriber::fmt::fmt()
+        .with_env_filter(EnvFilter::from_default_env())
+        .init();
+
+    Ok(())
 }
