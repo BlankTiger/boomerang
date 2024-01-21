@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Boomerang</title>
+  </head>
+
+  <body bgcolor="#020202" style="color: white; max-width: 250px">
+    <center>
+      <div width="200px">
+        <h1>Create boomerang</h1>
+        <form id="form" enctype="multipart/form-data">
+          <div>
+            <div class="input-group">
+              <label for="files">Select files</label>
+              <input id="file" type="file" accept="video/*" />
+            </div>
+            <br />
+            <div style="flex: auto; flex-flow: column">
+              <div class="input-group">
+                <label for="from_sec">Starting second</label>
+                <input id="from_sec" type="text" value="0" />
+              </div>
+              <div class="input-group">
+                <label for="to_sec">Ending second</label>
+                <input id="to_sec" type="text" value="50" />
+              </div>
+              <div class="input-group">
+                <label for="speed">Speed multiplier</label>
+                <input id="speed" type="text" value="1" />
+              </div>
+            </div>
+          </div>
+          <br />
+          <button class="submit-btn" type="submit">Upload</button>
+          <p id="notification"></p>
+        </form>
+      </div>
+    </center>
+    <script>
+      const handleSubmit = (event) => {
+        event.preventDefault();
+        const notification = document.getElementById("notification");
+        notification.innerHTML = "Uploading...";
+
+        const form = document.getElementById("form");
+        const inputFile = document.getElementById("file");
+        const fromSec = document.getElementById("from_sec")
+          ? document.getElementById("from_sec")
+          : 0;
+        const toSec = document.getElementById("to_sec")
+          ? document.getElementById("to_sec")
+          : 10000;
+        const speed = document.getElementById("speed")
+          ? document.getElementById("speed")
+          : 1;
+
+        const formData = new FormData();
+        const headers = new Headers();
+
+        for (const file of inputFile.files) {
+          formData.append("files", file);
+        }
+
+        headers.append("Access-Control-Allow-Origin", "*");
+
+        fetch(
+          `http://{ip}:8080/make_boomerang?&from_sec=${fromSec.value}&to_sec=${toSec.value}&speed=${speed.value}`,
+          {
+            method: "post",
+            body: formData,
+            headers: headers,
+          },
+        )
+          .then((res) => {notification.innerHTML = `${res.status} ${res.statusText}`;})
+          .catch((error) => {notification.innerHTML = `Error: ${error}`;});
+
+
+        form.addEventListener("submit", handleSubmit);
+    </script>
+  </body>
+</html>

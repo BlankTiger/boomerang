@@ -51,7 +51,7 @@ jobs:
           toolchain: stable
           override: true
       - name: Build
-        run: cargo build --release --locked --bin server
+        run: cargo build --release --locked -p server
       # No need to upload binaries for dry run (cron)
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@2.7.0
@@ -106,7 +106,7 @@ jobs:
         with:
           command: build
           use-cross: true
-          args: --release --target ${{ matrix.target }} --bin server
+          args: --release --target ${{ matrix.target }} -p server
         env:
           CROSS_DOCKER_IN_DOCKER: true
       - name: List target output files

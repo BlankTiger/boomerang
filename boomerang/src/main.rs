@@ -1,4 +1,4 @@
-use boomerang::make_boomerang;
+use boomeranglib::make_boomerang;
 
 fn main() -> Result<(), ffmpeg_sidecar::error::Error> {
     ffmpeg_sidecar::download::auto_download()?;

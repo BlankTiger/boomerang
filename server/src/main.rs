@@ -1,23 +1,11 @@
-// use futures_util::stream::StreamExt;
 use axum::{
-    response::Html,
     extract::{DefaultBodyLimit, Multipart, Query},
+    response::Html,
     routing, Router,
 };
-use boomerang::make_boomerang;
+use boomeranglib::make_boomerang;
 use std::collections::HashMap;
 use std::io::Write;
-
-// async fn upload(mut multipart: Multipart) {
-//     let mut file = std::fs::File::create("is_this_working.mp4").unwrap();
-//     while let Some(field) = multipart.next_field().await.unwrap() {
-//         let name = field.name().unwrap().to_string();
-//         let data = field.bytes().await.unwrap();
-//         file.write_all(&data).unwrap();
-//
-//         println!("Length of `{}` is {} bytes", name, data.len());
-//     }
-// }
 
 async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut multipart: Multipart) {
     let filename = "current_file.mp4";
@@ -35,11 +23,16 @@ async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut mul
     let to_sec = params.get("to_sec").unwrap_or(&zero);
     let speed = params.get("speed").unwrap_or(&one).parse::<f64>().unwrap();
     make_boomerang(filename, from_sec, to_sec, Some(1), Some(speed)).unwrap();
-    println!("from_sec: {}, to_sec: {}, speed: {}", from_sec, to_sec, speed);
+    println!(
+        "from_sec: {}, to_sec: {}, speed: {}",
+        from_sec, to_sec, speed
+    );
 }
 
-async fn website() -> Html<&'static str> {
-    let html = include_str!("../../website/index.html");
+async fn website() -> Html<String> {
+    let html = include_str!("../website/index.html");
+    let ip = get_local_ip::network().expect("Network to work").ip;
+    let html = html.replace("{ip}", &ip);
     Html(html)
 }
 
