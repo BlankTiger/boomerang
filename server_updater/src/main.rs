@@ -41,6 +41,7 @@ impl Server {
         let mut perms = std::fs::metadata(FILENAME).unwrap().permissions();
         perms.set_mode(0o755);
         std::fs::set_permissions(FILENAME, perms).unwrap();
+
         let proc = std::process::Command::new("./bin/boomerang_server")
             .spawn()
             .unwrap();
@@ -64,6 +65,7 @@ fn main() {
         let mut file = std::fs::File::create(TEMP_FILENAME).unwrap();
         let mut content = std::io::Cursor::new(resp.bytes().unwrap());
         std::io::copy(&mut content, &mut file).unwrap();
+        drop(file);
         info!("downloaded server binary");
 
         // if main file doesnt exist, then place the downloaded file
@@ -82,6 +84,10 @@ fn main() {
         let mut new_file = std::fs::File::open(TEMP_FILENAME).unwrap();
         let mut new_file_bytes = vec![];
         new_file.read_to_end(&mut new_file_bytes).unwrap();
+        new_file
+            .set_permissions(std::fs::Permissions::from_mode(0o755))
+            .unwrap();
+        drop(new_file);
         let hash = md5::compute(new_file_bytes);
         let hash = format!("{:x}", hash);
         info!("hash: {}", hash);
@@ -93,6 +99,7 @@ fn main() {
         let mut current_file = std::fs::File::open(FILENAME).unwrap();
         let mut current_file_bytes = vec![];
         current_file.read_to_end(&mut current_file_bytes).unwrap();
+        drop(current_file);
         let current_hash = md5::compute(current_file_bytes);
         let current_hash = format!("{:x}", current_hash);
         info!("current hash: {}", current_hash);
@@ -102,11 +109,6 @@ fn main() {
             std::fs::rename(TEMP_FILENAME, FILENAME).unwrap();
             info!("replaced current file");
             info!("restarting server");
-            std::process::Command::new("systemctl")
-                .arg("restart")
-                .arg("boomerang-server")
-                .output()
-                .unwrap();
             server.restart();
             info!("restarted server");
         } else {
