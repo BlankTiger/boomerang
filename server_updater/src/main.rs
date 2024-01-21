@@ -7,7 +7,43 @@ const FILENAME: &str = "bin/boomerang_server";
 const TEMP_FILENAME: &str = "bin/boomerang_server-new";
 const TIMEOUT: u64 = 2 * 60;
 
+struct Server {
+    proc: Option<std::process::Child>,
+}
+
+impl Server {
+    fn new() -> Self {
+        Self { proc: None }
+    }
+
+    fn restart(&mut self) {
+        if let Some(ref mut proc) = self.proc {
+            proc.kill().unwrap();
+            self.proc = None;
+        }
+        self.start();
+    }
+
+    fn is_running(&self) -> bool {
+        self.proc.is_some()
+    }
+
+    fn start(&mut self) {
+        info!("starting server");
+        let mut perms = std::fs::metadata(FILENAME).unwrap().permissions();
+        perms.set_mode(0o755);
+        std::fs::set_permissions(FILENAME, perms).unwrap();
+        let proc = std::process::Command::new("./bin/boomerang_server")
+            .spawn()
+            .unwrap();
+        info!("started server");
+        self.proc = Some(proc);
+    }
+}
+
 fn main() {
+    let mut server = Server::new();
+
     loop {
         //create bin directory if doesnt exist
         if !std::path::Path::new("bin").exists() {
@@ -29,7 +65,7 @@ fn main() {
             std::fs::rename(TEMP_FILENAME, FILENAME).unwrap();
             info!("placed downloaded file");
             info!("restarting server");
-            start_server();
+            server.start();
             continue;
         }
 
@@ -53,8 +89,8 @@ fn main() {
         let current_hash = format!("{:x}", current_hash);
         info!("current hash: {}", current_hash);
 
-        if !is_running() {
-            start_server();
+        if !server.is_running() {
+            server.start();
         }
 
         if hash != current_hash {
@@ -67,8 +103,8 @@ fn main() {
                 .arg("boomerang-server")
                 .output()
                 .unwrap();
+            server.restart();
             info!("restarted server");
-            restart_server();
         } else {
             info!("hashes are the same, not replacing current file");
             std::fs::remove_file(TEMP_FILENAME).unwrap();
@@ -77,36 +113,4 @@ fn main() {
         info!("sleeping for {} seconds", TIMEOUT);
         std::thread::sleep(std::time::Duration::from_secs(TIMEOUT));
     }
-}
-
-fn restart_server() {
-    std::process::Command::new("killall")
-        .arg("boomerang_server")
-        .spawn()
-        .unwrap()
-        .wait()
-        .unwrap();
-    start_server();
-}
-
-fn is_running() -> bool {
-    let pid = std::process::Command::new("pgrep")
-        .arg("-f")
-        .arg("\"boomerang_server\"")
-        .spawn()
-        .unwrap()
-        .wait_with_output()
-        .unwrap();
-    !pid.stdout.is_empty()
-}
-
-fn start_server() {
-    info!("starting server");
-    let mut perms = std::fs::metadata(FILENAME).unwrap().permissions();
-    perms.set_mode(0o755);
-    std::fs::set_permissions(FILENAME, perms).unwrap();
-    std::process::Command::new("./bin/boomerang_server")
-        .spawn()
-        .unwrap();
-    info!("started server");
 }
