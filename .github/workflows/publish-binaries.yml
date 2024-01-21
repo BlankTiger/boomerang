@@ -51,15 +51,24 @@ jobs:
           toolchain: stable
           override: true
       - name: Build
-        run: cargo build --release --locked -p server
+        run: cargo build --release --locked -p boomerang_server; cargo build --release --locked -p server_updater
       # No need to upload binaries for dry run (cron)
-      - name: Upload binaries to release
+      - name: Upload server binary
         uses: svenstaro/upload-release-action@2.7.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/server
           asset_name: boomerang-server-linux-amd64
           tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload server updater binary
+        uses: svenstaro/upload-release-action@2.7.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/server_updater
+          asset_name: boomerang-server-updater-linux-amd64
+          tag: ${{ github.ref }}
+          overwrite: true
 
   publish-aarch64:
     name: Publish binary for aarch64
@@ -101,17 +110,23 @@ jobs:
         #   RUSTFLAGS: '-Clink-arg=-fuse-ld=gold'
         run: |
           echo 'JEMALLOC_SYS_WITH_LG_PAGE=16' >> $GITHUB_ENV
-      - name: Cargo build
+      - name: Cargo build boomerang_server
         uses: actions-rs/cargo@v1
         with:
           command: build
           use-cross: true
-          args: --release --target ${{ matrix.target }} -p server
+          args: --release --target ${{ matrix.target }} -p boomerang_server
         env:
           CROSS_DOCKER_IN_DOCKER: true
-      - name: List target output files
-        run: ls -lR ./target
-      - name: Upload the binary to release
+      - name: Cargo build server_updater
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          use-cross: true
+          args: --release --target ${{ matrix.target }} -p server_updater
+        env:
+          CROSS_DOCKER_IN_DOCKER: true
+      - name: Upload the server binary to release
         # No need to upload binaries for dry run (cron)
         uses: svenstaro/upload-release-action@2.7.0
         with:
@@ -119,3 +134,13 @@ jobs:
           file: target/${{ matrix.target }}/release/server
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
+          overwrite: true
+      - name: Upload the server updater binary to release
+        # No need to upload binaries for dry run (cron)
+        uses: svenstaro/upload-release-action@2.7.0
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/${{ matrix.target }}/release/server_updater
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
+          overwrite: true

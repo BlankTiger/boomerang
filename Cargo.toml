@@ -7,4 +7,4 @@ edition = "2021"
 ffmpeg-sidecar = "0.5.1"
 
 [workspace]
-members = ["boomerang", "server", "update_server"]
+members = ["boomerang", "boomerang_server", "server_updater"]
