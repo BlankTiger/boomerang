@@ -31,7 +31,10 @@ async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut mul
 
 async fn website() -> Html<String> {
     let html = include_str!("../website/index.html");
-    let ip = get_local_ip::network().expect("Network to work").ip;
+    let ip = local_ip_address::local_ip()
+        .expect("Network to work")
+        .to_string();
+    println!("IP: {}", ip);
     let html = html.replace("{ip}", &ip);
     Html(html)
 }
