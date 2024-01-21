@@ -2,10 +2,11 @@ name: Publish binaries to GitHub release
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "0 2 * * *" # Every day at 2:00am
   release:
     types: [published]
+  push:
+    branches:
+      - master
 
 jobs:
   check-version:
@@ -53,7 +54,6 @@ jobs:
         run: cargo build --release --locked --bin server
       # No need to upload binaries for dry run (cron)
       - name: Upload binaries to release
-        if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@2.7.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
@@ -113,7 +113,6 @@ jobs:
         run: ls -lR ./target
       - name: Upload the binary to release
         # No need to upload binaries for dry run (cron)
-        if: github.event_name == 'release'
         uses: svenstaro/upload-release-action@2.7.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
