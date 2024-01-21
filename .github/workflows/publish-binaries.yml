@@ -57,7 +57,7 @@ jobs:
         uses: svenstaro/upload-release-action@2.7.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/release/server
+          file: target/release/boomerang_server
           asset_name: boomerang-server-linux-amd64
           tag: ${{ github.ref }}
           overwrite: true
@@ -132,7 +132,7 @@ jobs:
         uses: svenstaro/upload-release-action@2.7.0
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
-          file: target/${{ matrix.target }}/release/server
+          file: target/${{ matrix.target }}/release/boomerang_server
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
           overwrite: true
