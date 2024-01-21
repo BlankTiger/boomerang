@@ -4,18 +4,20 @@ use axum::{
     routing, Router,
 };
 use boomeranglib::make_boomerang;
+use log::info;
 use std::collections::HashMap;
 use std::io::Write;
 
 async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut multipart: Multipart) {
-    let filename = "current_file.mp4";
+    let curr_file = "current_file.mp4".to_string();
+    let filename = params.get("filename").unwrap_or(&curr_file);
     let mut file = std::fs::File::create(filename).unwrap();
     while let Some(field) = multipart.next_field().await.unwrap() {
         let name = field.name().unwrap().to_string();
         let data = field.bytes().await.unwrap();
         file.write_all(&data).unwrap();
 
-        println!("Length of `{}` is {} bytes", name, data.len());
+        info!("Length of `{}` is {} bytes", name, data.len());
     }
     let zero = "0".to_string();
     let one = "1".to_string();
@@ -23,7 +25,7 @@ async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut mul
     let to_sec = params.get("to_sec").unwrap_or(&zero);
     let speed = params.get("speed").unwrap_or(&one).parse::<f64>().unwrap();
     make_boomerang(filename, from_sec, to_sec, Some(1), Some(speed)).unwrap();
-    println!(
+    info!(
         "from_sec: {}, to_sec: {}, speed: {}",
         from_sec, to_sec, speed
     );
@@ -34,7 +36,7 @@ async fn website() -> Html<String> {
     let ip = local_ip_address::local_ip()
         .expect("Network to work")
         .to_string();
-    println!("IP: {}", ip);
+    info!("IP: {}", ip);
     let html = html.replace("{ip}", &ip);
     Html(html)
 }

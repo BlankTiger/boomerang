@@ -139,6 +139,7 @@ dependencies = [
  "boomeranglib",
  "futures-util",
  "local-ip-address",
+ "log",
  "tokio",
 ]
 
@@ -1019,6 +1020,7 @@ dependencies = [
 name = "server_updater"
 version = "0.1.0"
 dependencies = [
+ "log",
  "md5",
  "reqwest",
 ]
