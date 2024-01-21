@@ -5,9 +5,9 @@ use axum::{
 };
 use boomeranglib::make_boomerang;
 use color_eyre::Report;
-use tracing::info;
 use std::collections::HashMap;
 use std::io::Write;
+use tracing::info;
 use tracing_subscriber::EnvFilter;
 
 async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut multipart: Multipart) {
@@ -29,8 +29,8 @@ async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut mul
     let speed = params.get("speed").unwrap_or(&one).parse::<f64>().unwrap();
     make_boomerang(filename, from_sec, to_sec, Some(1), Some(speed)).unwrap();
     info!(
-        "from_sec: {}, to_sec: {}, speed: {}",
-        from_sec, to_sec, speed
+        "filename: {}, from_sec: {}, to_sec: {}, speed: {}",
+        filename, from_sec, to_sec, speed
     );
 }
 
