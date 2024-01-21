@@ -17,10 +17,7 @@ impl Server {
     }
 
     fn restart(&mut self) {
-        if let Some(ref mut proc) = self.proc {
-            proc.kill().unwrap();
-            self.proc = None;
-        }
+        self.stop();
         self.start();
     }
 
@@ -28,7 +25,18 @@ impl Server {
         self.proc.is_some()
     }
 
+    fn stop(&mut self) {
+        if let Some(ref mut proc) = self.proc {
+            proc.kill().unwrap();
+            self.proc = None;
+        }
+    }
+
     fn start(&mut self) {
+        if self.is_running() {
+            info!("server is already running");
+            return;
+        }
         info!("starting server");
         let mut perms = std::fs::metadata(FILENAME).unwrap().permissions();
         perms.set_mode(0o755);
@@ -89,10 +97,6 @@ fn main() {
         let current_hash = format!("{:x}", current_hash);
         info!("current hash: {}", current_hash);
 
-        if !server.is_running() {
-            server.start();
-        }
-
         if hash != current_hash {
             info!("hashes are different, replacing current file");
             std::fs::rename(TEMP_FILENAME, FILENAME).unwrap();
@@ -108,6 +112,12 @@ fn main() {
         } else {
             info!("hashes are the same, not replacing current file");
             std::fs::remove_file(TEMP_FILENAME).unwrap();
+            if server.is_running() {
+                info!("server is running");
+            } else {
+                info!("server is not running");
+                server.start();
+            }
         }
 
         info!("sleeping for {} seconds", TIMEOUT);
