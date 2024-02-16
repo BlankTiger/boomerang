@@ -30,6 +30,20 @@ pub fn make_boomerang(
         to_sec
     };
 
+    let audio_presence = std::process::Command::new("ffprobe")
+        .args([
+            "-i",
+            input_path,
+            "-show_streams",
+            "-select_streams",
+            "a",
+            "-loglevel",
+            "error",
+        ])
+        .output()
+        .expect("failed to execute process")
+        .stdout;
+
     let output_path = format!(
         "./output/{}_output.mp4",
         input_path.trim_end_matches(".mp4")
@@ -76,5 +90,9 @@ pub fn make_boomerang(
         .wait()
         // .wait_with_output()
         .unwrap();
+    println!(
+        "audio_presence: {}",
+        String::from_utf8_lossy(&audio_presence)
+    );
     Ok(())
 }
