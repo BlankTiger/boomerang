@@ -30,6 +30,28 @@ pub fn make_boomerang(
         to_sec
     };
 
+    let audio_presence = std::process::Command::new("ffprobe")
+        .args([
+            "-i",
+            input_path,
+            "-show_streams",
+            "-select_streams",
+            "a",
+            "-loglevel",
+            "error",
+        ])
+        .output()
+        .expect("failed to execute process")
+        .stdout;
+
+    // if ffprobe output is empty then there is no audio
+    let audio_present = !audio_presence.is_empty();
+    println!(
+        "audio_presence {}: {}",
+        audio_present,
+        String::from_utf8_lossy(&audio_presence)
+    );
+
     let output_path = format!(
         "./output/{}_output.mp4",
         input_path.trim_end_matches(".mp4")
@@ -53,19 +75,20 @@ pub fn make_boomerang(
         // "-an",
     ]);
     if let Some(speed) = speed {
-        // -filter_complex "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]"
-        ffmpeg.args([
-            "-filter_complex",
-            &format!(
+        let speed_filter = if audio_present {
+            format!(
                 "[0:v]setpts={}/PTS[v];[0:a]atempo={}[a]",
                 speed,
                 1.0 / speed
-            ),
-            "-map",
-            "[v]",
-            "-map",
-            "[a]",
-        ]);
+            )
+        } else {
+            format!("[0:v]setpts={}/PTS[v]", speed)
+        };
+        // -filter_complex "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]"
+        ffmpeg.args(["-filter_complex", &speed_filter, "-map", "[v]"]);
+        if audio_present {
+            ffmpeg.args(["-map", "[a]"]);
+        }
     }
 
     ffmpeg.args([&output_path, "-y", "-hide_banner"]);
