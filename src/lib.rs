@@ -73,9 +73,18 @@ pub fn make_boomerang(
         // "-an",
     ]);
     if let Some(speed) = speed {
+        let upsampling_part = if speed < 1.0 {
+            format!(
+                ",minterpolate='mi_mode=mci:mc_mode=aobmc:vsbmc=1:fps={}'[c]",
+                fps.unwrap_or(30)
+            )
+        } else {
+            "[c]".to_string()
+        };
         let video_speed_filter = format!(
-            "[0:v]setpts={}*PTS[c];[c]split[a][b];[b]reverse[b];[a][b]concat[vout]",
-            1.0 / speed
+            "[0:v]setpts={}*PTS{};[c]split[a][b];[b]reverse[b];[a][b]concat[vout]",
+            1.0 / speed,
+            upsampling_part,
         );
         ffmpeg.args(["-filter_complex", &video_speed_filter, "-map", "[vout]"]);
         if audio_present {
