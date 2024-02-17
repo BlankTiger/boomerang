@@ -18,7 +18,7 @@
             <br />
             <div style="flex: auto; flex-flow: column">
               <div class="input-group">
-                <label for="filename">Starting second</label>
+                <label for="filename">Filename</label>
                 <input id="filename" type="text" value="current.mp4" />
               </div>
               <div class="input-group">
@@ -32,6 +32,10 @@
               <div class="input-group">
                 <label for="speed">Speed multiplier</label>
                 <input id="speed" type="text" value="1" />
+              </div>
+              <div class="input-group">
+                <label for="fps">fps</label>
+                <input id="fps" type="text" value="30" />
               </div>
             </div>
           </div>
@@ -53,14 +57,17 @@
           : "current.mp4";
         const inputFile = document.getElementById("file");
         const fromSec = document.getElementById("from_sec").value
-          ? document.getElementById("from_sec")
+          ? document.getElementById("from_sec").value
           : 0;
         const toSec = document.getElementById("to_sec").value
-          ? document.getElementById("to_sec")
+          ? document.getElementById("to_sec").value
           : 10000;
         const speed = document.getElementById("speed").value
-          ? document.getElementById("speed")
+          ? document.getElementById("speed").value
           : 1;
+        const fps = document.getElementById("fps").value
+          ? document.getElementById("fps").value
+          : 30;
 
         const formData = new FormData();
         const headers = new Headers();
@@ -72,7 +79,7 @@
         headers.append("Access-Control-Allow-Origin", "*");
 
         fetch(
-          `http://{ip}:8080/make_boomerang?&from_sec=${fromSec.value}&to_sec=${toSec.value}&speed=${speed.value}&filename=${filename}`,
+          `http://{ip}:8080/make_boomerang?&from_sec=${fromSec}&to_sec=${toSec}&speed=${speed}&fps=${fps}&filename=${filename}`,
           {
             method: "post",
             body: formData,

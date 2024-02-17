@@ -23,11 +23,13 @@ async fn create_boomerang(Query(params): Query<HashMap<String, String>>, mut mul
     }
     let zero = "0".to_string();
     let one = "1".to_string();
+    let thirty = "30".to_string();
     println!("{:?}", params);
     let from_sec = params.get("from_sec").unwrap_or(&zero);
     let to_sec = params.get("to_sec").unwrap_or(&zero);
     let speed = params.get("speed").unwrap_or(&one).parse::<f64>().unwrap();
-    make_boomerang(filename, from_sec, to_sec, Some(1), Some(speed)).unwrap();
+    let fps = params.get("fps").unwrap_or(&thirty).parse::<usize>().unwrap();
+    make_boomerang(filename, from_sec, to_sec, Some(1), Some(speed), Some(fps)).unwrap();
     info!(
         "filename: {}, from_sec: {}, to_sec: {}, speed: {}",
         filename, from_sec, to_sec, speed

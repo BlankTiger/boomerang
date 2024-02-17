@@ -4,6 +4,7 @@ pub fn make_boomerang(
     to_sec: &str,
     _repeat: Option<usize>,
     speed: Option<f64>,
+    fps: Option<usize>,
 ) -> Result<(), ffmpeg_sidecar::error::Error> {
     ffmpeg_sidecar::download::auto_download()?;
 
@@ -86,7 +87,11 @@ pub fn make_boomerang(
         }
     }
 
-    ffmpeg.args([&output_path, "-y", "-hide_banner"]);
+    ffmpeg.arg(&output_path);
+    if let Some(fps) = fps {
+        ffmpeg.args(["-r", &format!("{}", fps)]);
+    }
+    ffmpeg.args(["-y", "-hide_banner"]);
 
     let _output = ffmpeg
         .spawn()
