@@ -57,7 +57,6 @@ pub fn make_boomerang(
         input_path.trim_end_matches(".mp4")
     );
 
-    let filter = "[0]split[a][b];[b]reverse[b];[a][b]concat";
     let mut ffmpeg = std::process::Command::new("ffmpeg");
     // if let Some(speed) = speed {
     //     ffmpeg.args(["-itsscale", &format!("{}", 1.0 / speed)]);
@@ -70,24 +69,20 @@ pub fn make_boomerang(
         &to_sec,
         "-i",
         &input_path,
-        "-filter_complex",
-        &filter,
         // "-an",
     ]);
     if let Some(speed) = speed {
-        let speed_filter = if audio_present {
-            format!(
-                "[0:v]setpts={}/PTS[v];[0:a]atempo={}[a]",
-                speed,
-                1.0 / speed
-            )
-        } else {
-            format!("[0:v]setpts={}/PTS[v]", speed)
-        };
-        // -filter_complex "[0:v]setpts=0.5*PTS[v];[0:a]atempo=2.0[a]" -map "[v]"
-        ffmpeg.args(["-filter_complex", &speed_filter, "-map", "[v]"]);
+        let video_speed_filter = format!(
+            "[0:v]setpts={}*PTS[c];[c]split[a][b];[b]reverse[b];[a][b]concat[vout]",
+            1.0 / speed
+        );
+        ffmpeg.args(["-filter_complex", &video_speed_filter, "-map", "[vout]"]);
         if audio_present {
-            ffmpeg.args(["-map", "[a]"]);
+            let audio_speed_filter = format!(
+                "[0:a]atempo={}[d];[d]asplit[e][f];[f]areverse[f];[e][f]concat=v=0:a=1[aout]",
+                speed
+            );
+            ffmpeg.args(["-filter_complex", &audio_speed_filter, "-map", "[aout]"]);
         }
     }
 
